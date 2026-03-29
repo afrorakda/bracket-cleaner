@@ -3,16 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <title>Bracket Cleaner - Fridge Combo</title>
-    
-    <link rel="icon" href="image_43.png">
     <link rel="apple-touch-icon" href="image_43.png">
-
+    <link rel="icon" href="image_43.png">
+    <title>Bracket Cleaner - Fridge Combo</title>
     <style>
         :root {
-            --bg: #fff;
+            --bg: #f5f5f5;
+            --container-bg: #fff;
             --main: #333;
             --accent: #eee;
             --input-bg: #fafafa;
@@ -22,7 +19,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
             color: var(--main);
             margin: 0;
@@ -36,22 +33,26 @@
         .container {
             width: 100%;
             max-width: 400px;
-            padding: 20px 0;
+            background-color: var(--container-bg);
+            padding: 30px 15px 35px;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
 
-        header { text-align: left; padding: 0 10px; }
+        header { padding: 0 10px; }
         h1 { font-size: 26px; margin: 0; font-weight: 800; letter-spacing: -1px; }
-        .description { font-size: 13px; opacity: 0.6; margin-top: 5px; font-weight: 500; }
+        .description { font-size: 13px; opacity: 0.4; margin-top: 5px; font-weight: 600; }
 
+        /* Mode Selector */
         .mode-selector {
             display: flex;
             background: var(--input-bg);
             padding: 5px;
             border-radius: var(--radius);
-            border: 1px solid var(--accent);
+            border: 2px solid var(--accent);
             gap: 5px;
         }
         .mode-btn {
@@ -64,13 +65,13 @@
             background: transparent;
             color: var(--main);
             cursor: pointer;
-            transition: 0.2s;
         }
         .mode-btn.active {
             background: var(--main);
             color: #fff;
         }
 
+        /* Input Area */
         .input-wrapper {
             width: 100%;
             position: relative;
@@ -78,7 +79,7 @@
         textarea {
             width: 100%;
             height: 300px;
-            padding: 15px;
+            padding: 20px;
             border: 2px solid var(--accent);
             border-radius: var(--radius);
             background-color: var(--input-bg);
@@ -86,24 +87,31 @@
             color: var(--main);
             outline: none;
             resize: none;
+            /* iOS Style Fix */
             -webkit-appearance: none;
             -webkit-text-fill-color: var(--main);
             opacity: 1 !important;
+        }
+        textarea::placeholder {
+            color: var(--main);
+            opacity: 0.3; /* 透かし効果 */
         }
 
         .clr-btn {
             position: absolute;
             right: 15px;
             bottom: 15px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 800;
             color: var(--main);
             cursor: pointer;
-            opacity: 0.4;
+            opacity: 0.3;
             padding: 10px;
+            letter-spacing: 1px;
         }
 
-        .action-btn {
+        /* Action Button */
+        .btn-main {
             width: 100%;
             padding: 20px;
             background-color: var(--main);
@@ -113,109 +121,74 @@
             font-size: 16px;
             font-weight: 800;
             cursor: pointer;
-            transition: 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .action-btn:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-main:active { transform: scale(0.98); }
 
-        .result-area {
-            display: none;
-            background: var(--input-bg);
-            border-radius: var(--radius);
-            padding: 15px;
-            border: 1px solid var(--accent);
+        /* Footer Area */
+        .footer-action-area {
             margin-top: 10px;
-        }
-
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            margin-bottom: 8px;
-            font-weight: 700;
-            opacity: 0.5;
-        }
-
-        .copy-btn {
-            width: 100%;
-            padding: 15px;
-            background-color: var(--main);
-            color: #fff;
-            border: none;
-            border-radius: var(--radius);
-            font-size: 14px;
-            font-weight: 800;
-            cursor: pointer;
-        }
-
-        /* Modal Structure */
-        #modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .modal-content {
-            background: #fff;
-            width: 100%;
-            max-width: 320px;
-            padding: 30px;
-            border-radius: var(--radius);
-            text-align: center;
-            position: relative;
-        }
-        .modal-icon { width: 60px; height: 60px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #eee; }
-        .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 10px; }
-        .modal-text { font-size: 14px; line-height: 1.5; color: #666; margin-bottom: 20px; }
-        .modal-close {
-            background: var(--main);
-            color: #fff;
-            padding: 12px;
-            width: 100%;
-            border-radius: 12px;
-            border: none;
-            font-weight: 800;
-            cursor: pointer;
-        }
-
-        footer {
-            margin-top: auto;
-            padding: 40px 0 20px;
-            text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 15px;
         }
-        .kofi-btn {
-            background: var(--main);
+
+        .action-btn-sub {
+            width: 85%;
+            padding: 14px;
+            background-color: var(--main);
             color: #fff;
-            padding: 12px 24px;
-            border-radius: var(--radius);
-            text-decoration: none;
-            font-weight: 800;
-            font-size: 13px;
-        }
-        .ath-btn {
-            background: var(--accent);
-            color: var(--main);
-            padding: 10px 20px;
-            border-radius: var(--radius);
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 12px;
             border: none;
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-weight: bold;
+            text-decoration: none;
+            text-align: center;
             cursor: pointer;
         }
-        .footer-line {
+
+        footer {
+            margin-top: auto;
+            padding: 30px 0 20px;
+            text-align: center;
             font-size: 11px;
             line-height: 1.8;
-            color: #aaa;
+            opacity: 0.4;
             font-weight: 500;
         }
+
+        /* Modal (#40 Template) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: var(--container-bg);
+            padding: 30px;
+            border-radius: var(--radius);
+            max-width: 340px;
+            width: 90%;
+            position: relative;
+        }
+        .modal-close-x {
+            position: absolute;
+            top: 15px; right: 15px;
+            color: #ccc; font-size: 22px; cursor: pointer;
+            padding: 5px;
+        }
+        .modal-title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 20px; font-weight: bold; margin-bottom: 25px;
+        }
+        .modal-item { margin-bottom: 18px; font-size: 14px; line-height: 1.6; color: #555; }
+        .modal-item b { display: block; margin-bottom: 3px; color: var(--main); }
+
     </style>
 </head>
 <body>
@@ -223,7 +196,7 @@
 <div class="container">
     <header>
         <h1>Bracket Cleaner</h1>
-        <p class="description">Remove brackets or their content instantly.</p>
+        <div class="description">Remove brackets or their content instantly.</div>
     </header>
 
     <div class="mode-selector">
@@ -236,42 +209,43 @@
         <div class="clr-btn" id="btn-clr">CLR</div>
     </div>
 
-    <button id="btn-main" class="action-btn">CLEAN TEXT</button>
+    <button id="btn-run" class="btn-main">Clean Text</button>
 
-    <div id="result-box" class="result-area">
-        <div id="stats"></div>
-        <button id="btn-copy" class="copy-btn">COPY RESULT</button>
-    </div>
-</div>
-
-<div id="modal-overlay">
-    <div class="modal-content">
-        <img src="image_43.png" class="modal-icon" alt="icon">
-        <div class="modal-title">Add to Home</div>
-        <div class="modal-text">Tap the share button and select "Add to Home Screen" for quick access.</div>
-        <button class="modal-close" id="modal-close">Got it</button>
+    <div class="footer-action-area">
+        <a href="https://ko-fi.com/afrorakda" target="_blank" class="action-btn-sub">☕️ buy me a coffee</a>
+        <div class="action-btn-sub" onclick="showModal()">📱 Add to Home Screen</div>
     </div>
 </div>
 
 <footer>
-    <button id="btn-ath" class="ath-btn">Add to Home Screen</button>
-    <a href="https://ko-fi.com/afrorakda" target="_blank" rel="noopener" class="kofi-btn">☕️buy me a coffee</a>
-    <div class="footer-line">
-        No login / No tracking / No ads / Browser only<br>
-        Privacy Policy<br>
-        afrorakda © 2026
-    </div>
+    No login / No tracking / No ads / Browser only<br>
+    Privacy Policy / afrorakda © 2026
 </footer>
+
+<div id="homeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-close-x" onclick="closeModal()">×</div>
+        <div class="modal-title"><span>📱</span> Install</div>
+        <div class="modal-item">
+            Add this tool to your home screen.
+        </div>
+        <div class="modal-item">
+            <b>🍏 iPhone (Safari):</b>
+            Tap Share, then Add to Home Screen.
+        </div>
+        <div class="modal-item">
+            <b>🤖 Android (Chrome):</b>
+            Tap Menu (⋮), then Add to Home Screen.
+        </div>
+    </div>
+</div>
 
 <script>
     const input = document.getElementById('input-text');
-    const btnMain = document.getElementById('btn-main');
-    const resultBox = document.getElementById('result-box');
-    const stats = document.getElementById('stats');
-    const btnCopy = document.getElementById('btn-copy');
-    const modal = document.getElementById('modal-overlay');
+    const btnRun = document.getElementById('btn-run');
     let mode = 'content';
 
+    // Mode Switch
     document.getElementById('btn-content').onclick = (e) => {
         mode = 'content';
         e.target.classList.add('active');
@@ -283,20 +257,23 @@
         document.getElementById('btn-content').classList.remove('active');
     };
 
+    // CLR
     document.getElementById('btn-clr').onclick = () => {
         input.value = '';
-        resultBox.style.display = 'none';
         input.focus();
     };
 
-    btnMain.onclick = () => {
+    // Logic
+    btnRun.onclick = () => {
         const original = input.value;
         if(!original) return;
+
         const pairs = [
             ['\\(', '\\)'], ['（', '）'], ['\\[', '\\]'], ['［', '］'],
             ['\\{', '\\}'], ['｛', '｝'], ['「', '」'], ['『', '』'],
             ['<', '>'], ['〈', '〉'], ['《', '》'], ['＜', '＞'], ['【', '】'], ['〔', '〕']
         ];
+
         let result = original;
         if (mode === 'content') {
             pairs.forEach(p => {
@@ -310,21 +287,23 @@
                 result = result.replace(reOpen, '').replace(reClose, '');
             });
         }
+
         input.value = result;
-        stats.innerHTML = `<div class="stat-row"><span>Characters</span><span>${original.length} → ${result.length}</span></div>`;
-        resultBox.style.display = 'block';
+        
+        // Simple Copy Feedback
+        navigator.clipboard.writeText(result);
+        const oldText = btnRun.innerText;
+        btnRun.innerText = 'COPIED!';
+        setTimeout(() => btnRun.innerText = oldText, 1500);
     };
 
-    btnCopy.onclick = () => {
-        navigator.clipboard.writeText(input.value);
-        btnCopy.innerText = '✅ COPIED';
-        setTimeout(() => btnCopy.innerText = 'COPY RESULT', 2000);
-    };
-
-    // Modal Logic
-    document.getElementById('btn-ath').onclick = () => modal.style.display = 'flex';
-    document.getElementById('modal-close').onclick = () => modal.style.display = 'none';
-    modal.onclick = (e) => { if(e.target === modal) modal.style.display = 'none'; };
+    // Modal
+    function showModal() { document.getElementById('homeModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('homeModal').style.display = 'none'; }
+    window.onclick = (e) => {
+        const modal = document.getElementById('homeModal');
+        if (e.target == modal) closeModal();
+    }
 </script>
 
 </body>
