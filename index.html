@@ -46,7 +46,6 @@
         h1 { font-size: 26px; margin: 0; font-weight: 800; letter-spacing: -1px; }
         .description { font-size: 13px; opacity: 0.6; margin-top: 5px; font-weight: 500; }
 
-        /* Mode Selector */
         .mode-selector {
             display: flex;
             background: var(--input-bg);
@@ -72,7 +71,6 @@
             color: #fff;
         }
 
-        /* Input Area */
         .input-wrapper {
             width: 100%;
             position: relative;
@@ -88,7 +86,6 @@
             color: var(--main);
             outline: none;
             resize: none;
-            /* iOS Style Fix */
             -webkit-appearance: none;
             -webkit-text-fill-color: var(--main);
             opacity: 1 !important;
@@ -106,7 +103,6 @@
             padding: 10px;
         }
 
-        /* Action Buttons */
         .action-btn {
             width: 100%;
             padding: 20px;
@@ -127,9 +123,8 @@
             border-radius: var(--radius);
             padding: 15px;
             border: 1px solid var(--accent);
-            animation: fadeIn 0.3s ease;
+            margin-top: 10px;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         .stat-row {
             display: flex;
@@ -152,33 +147,50 @@
             cursor: pointer;
         }
 
-        /* Add to Home Modal */
-        #ath-modal {
+        /* Modal Structure */
+        #modal-overlay {
             display: none;
             position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: #fff;
+            width: 100%;
+            max-width: 320px;
+            padding: 30px;
+            border-radius: var(--radius);
+            text-align: center;
+            position: relative;
+        }
+        .modal-icon { width: 60px; height: 60px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #eee; }
+        .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 10px; }
+        .modal-text { font-size: 14px; line-height: 1.5; color: #666; margin-bottom: 20px; }
+        .modal-close {
             background: var(--main);
             color: #fff;
-            padding: 20px;
-            border-radius: var(--radius);
-            z-index: 1000;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 12px;
+            width: 100%;
+            border-radius: 12px;
+            border: none;
+            font-weight: 800;
+            cursor: pointer;
         }
-        .ath-content { display: flex; align-items: center; gap: 15px; }
-        .ath-icon { width: 50px; height: 50px; border-radius: 12px; background: #fff; }
-        .ath-text { flex: 1; font-size: 13px; font-weight: 600; line-height: 1.4; }
-        .ath-close { font-size: 20px; opacity: 0.5; cursor: pointer; padding-left: 10px; }
 
-        /* Footer */
         footer {
             margin-top: auto;
             padding: 40px 0 20px;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
         }
         .kofi-btn {
-            display: inline-block;
             background: var(--main);
             color: #fff;
             padding: 12px 24px;
@@ -186,7 +198,17 @@
             text-decoration: none;
             font-weight: 800;
             font-size: 13px;
-            margin-bottom: 25px;
+        }
+        .ath-btn {
+            background: var(--accent);
+            color: var(--main);
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 12px;
+            border: none;
+            cursor: pointer;
         }
         .footer-line {
             font-size: 11px;
@@ -222,15 +244,17 @@
     </div>
 </div>
 
-<div id="ath-modal">
-    <div class="ath-content">
-        <img src="image_43.png" class="ath-icon" alt="icon">
-        <div class="ath-text">Tap the share button and select "Add to Home Screen" for quick access.</div>
-        <div class="ath-close" id="ath-close">×</div>
+<div id="modal-overlay">
+    <div class="modal-content">
+        <img src="image_43.png" class="modal-icon" alt="icon">
+        <div class="modal-title">Add to Home</div>
+        <div class="modal-text">Tap the share button and select "Add to Home Screen" for quick access.</div>
+        <button class="modal-close" id="modal-close">Got it</button>
     </div>
 </div>
 
 <footer>
+    <button id="btn-ath" class="ath-btn">Add to Home Screen</button>
     <a href="https://ko-fi.com/afrorakda" target="_blank" rel="noopener" class="kofi-btn">☕️buy me a coffee</a>
     <div class="footer-line">
         No login / No tracking / No ads / Browser only<br>
@@ -245,10 +269,9 @@
     const resultBox = document.getElementById('result-box');
     const stats = document.getElementById('stats');
     const btnCopy = document.getElementById('btn-copy');
-    const athModal = document.getElementById('ath-modal');
+    const modal = document.getElementById('modal-overlay');
     let mode = 'content';
 
-    // Mode Toggle
     document.getElementById('btn-content').onclick = (e) => {
         mode = 'content';
         e.target.classList.add('active');
@@ -260,24 +283,20 @@
         document.getElementById('btn-content').classList.remove('active');
     };
 
-    // Clear
     document.getElementById('btn-clr').onclick = () => {
         input.value = '';
         resultBox.style.display = 'none';
         input.focus();
     };
 
-    // Core Logic
     btnMain.onclick = () => {
         const original = input.value;
         if(!original) return;
-
         const pairs = [
             ['\\(', '\\)'], ['（', '）'], ['\\[', '\\]'], ['［', '］'],
             ['\\{', '\\}'], ['｛', '｝'], ['「', '」'], ['『', '』'],
             ['<', '>'], ['〈', '〉'], ['《', '》'], ['＜', '＞'], ['【', '】'], ['〔', '〕']
         ];
-
         let result = original;
         if (mode === 'content') {
             pairs.forEach(p => {
@@ -291,29 +310,21 @@
                 result = result.replace(reOpen, '').replace(reClose, '');
             });
         }
-
         input.value = result;
-        stats.innerHTML = `
-            <div class="stat-row"><span>Characters</span><span>${original.length} → ${result.length}</span></div>
-        `;
+        stats.innerHTML = `<div class="stat-row"><span>Characters</span><span>${original.length} → ${result.length}</span></div>`;
         resultBox.style.display = 'block';
     };
 
-    // Copy
     btnCopy.onclick = () => {
         navigator.clipboard.writeText(input.value);
-        const oldText = btnCopy.innerText;
         btnCopy.innerText = '✅ COPIED';
-        setTimeout(() => btnCopy.innerText = oldText, 2000);
+        setTimeout(() => btnCopy.innerText = 'COPY RESULT', 2000);
     };
 
-    // Add to Home Screen Logic (iOS)
-    const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
-    const isStandalone = window.navigator.standalone === true;
-    if (isIos && !isStandalone) {
-        athModal.style.display = 'block';
-    }
-    document.getElementById('ath-close').onclick = () => athModal.style.display = 'none';
+    // Modal Logic
+    document.getElementById('btn-ath').onclick = () => modal.style.display = 'flex';
+    document.getElementById('modal-close').onclick = () => modal.style.display = 'none';
+    modal.onclick = (e) => { if(e.target === modal) modal.style.display = 'none'; };
 </script>
 
 </body>
