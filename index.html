@@ -87,14 +87,14 @@
             color: var(--main);
             outline: none;
             resize: none;
-            /* iOS Style Fix */
             -webkit-appearance: none;
             -webkit-text-fill-color: var(--main);
             opacity: 1 !important;
         }
+        /* プレースホルダーを視認性の高い濃さに設定 */
         textarea::placeholder {
             color: var(--main);
-            opacity: 0.3; /* 透かし効果 */
+            opacity: 0.6; 
         }
 
         .clr-btn {
@@ -105,7 +105,7 @@
             font-weight: 800;
             color: var(--main);
             cursor: pointer;
-            opacity: 0.3;
+            opacity: 0.4;
             padding: 10px;
             letter-spacing: 1px;
         }
@@ -126,7 +126,7 @@
         }
         .btn-main:active { transform: scale(0.98); }
 
-        /* Footer Area */
+        /* Footer Action Area (#40 Base) */
         .footer-action-area {
             margin-top: 10px;
             display: flex;
@@ -134,7 +134,6 @@
             align-items: center;
             gap: 15px;
         }
-
         .action-btn-sub {
             width: 85%;
             padding: 14px;
@@ -155,11 +154,11 @@
             text-align: center;
             font-size: 11px;
             line-height: 1.8;
-            opacity: 0.4;
+            opacity: 0.5;
             font-weight: 500;
         }
 
-        /* Modal (#40 Template) */
+        /* Modal (#40 Base) */
         .modal {
             display: none;
             position: fixed;
@@ -188,7 +187,6 @@
         }
         .modal-item { margin-bottom: 18px; font-size: 14px; line-height: 1.6; color: #555; }
         .modal-item b { display: block; margin-bottom: 3px; color: var(--main); }
-
     </style>
 </head>
 <body>
@@ -245,7 +243,6 @@
     const btnRun = document.getElementById('btn-run');
     let mode = 'content';
 
-    // Mode Switch
     document.getElementById('btn-content').onclick = (e) => {
         mode = 'content';
         e.target.classList.add('active');
@@ -257,13 +254,11 @@
         document.getElementById('btn-content').classList.remove('active');
     };
 
-    // CLR
     document.getElementById('btn-clr').onclick = () => {
         input.value = '';
         input.focus();
     };
 
-    // Logic
     btnRun.onclick = () => {
         const original = input.value;
         if(!original) return;
@@ -287,17 +282,14 @@
                 result = result.replace(reOpen, '').replace(reClose, '');
             });
         }
-
         input.value = result;
         
-        // Simple Copy Feedback
         navigator.clipboard.writeText(result);
         const oldText = btnRun.innerText;
         btnRun.innerText = 'COPIED!';
         setTimeout(() => btnRun.innerText = oldText, 1500);
     };
 
-    // Modal
     function showModal() { document.getElementById('homeModal').style.display = 'flex'; }
     function closeModal() { document.getElementById('homeModal').style.display = 'none'; }
     window.onclick = (e) => {
