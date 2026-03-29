@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <title>Bracket Cleaner - Fridge Combo</title>
+    
+    <link rel="icon" href="image_43.png">
+    <link rel="apple-touch-icon" href="image_43.png">
+
     <style>
         :root {
             --bg: #fff;
@@ -38,8 +44,9 @@
 
         header { text-align: left; padding: 0 10px; }
         h1 { font-size: 26px; margin: 0; font-weight: 800; letter-spacing: -1px; }
-        .description { font-size: 13px; opacity: 0.6; margin-top: 5px; }
+        .description { font-size: 13px; opacity: 0.6; margin-top: 5px; font-weight: 500; }
 
+        /* Mode Selector */
         .mode-selector {
             display: flex;
             background: var(--input-bg);
@@ -65,11 +72,11 @@
             color: #fff;
         }
 
+        /* Input Area */
         .input-wrapper {
             width: 100%;
             position: relative;
         }
-
         textarea {
             width: 100%;
             height: 300px;
@@ -81,6 +88,7 @@
             color: var(--main);
             outline: none;
             resize: none;
+            /* iOS Style Fix */
             -webkit-appearance: none;
             -webkit-text-fill-color: var(--main);
             opacity: 1 !important;
@@ -98,6 +106,7 @@
             padding: 10px;
         }
 
+        /* Action Buttons */
         .action-btn {
             width: 100%;
             padding: 20px;
@@ -108,7 +117,9 @@
             font-size: 16px;
             font-weight: 800;
             cursor: pointer;
+            transition: 0.2s;
         }
+        .action-btn:active { transform: scale(0.98); opacity: 0.9; }
 
         .result-area {
             display: none;
@@ -116,14 +127,17 @@
             border-radius: var(--radius);
             padding: 15px;
             border: 1px solid var(--accent);
+            animation: fadeIn 0.3s ease;
         }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         .stat-row {
             display: flex;
             justify-content: space-between;
             font-size: 12px;
-            margin-bottom: 5px;
-            opacity: 0.7;
+            margin-bottom: 8px;
+            font-weight: 700;
+            opacity: 0.5;
         }
 
         .copy-btn {
@@ -136,16 +150,49 @@
             font-size: 14px;
             font-weight: 800;
             cursor: pointer;
-            margin-top: 10px;
         }
 
+        /* Add to Home Modal */
+        #ath-modal {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: var(--main);
+            color: #fff;
+            padding: 20px;
+            border-radius: var(--radius);
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .ath-content { display: flex; align-items: center; gap: 15px; }
+        .ath-icon { width: 50px; height: 50px; border-radius: 12px; background: #fff; }
+        .ath-text { flex: 1; font-size: 13px; font-weight: 600; line-height: 1.4; }
+        .ath-close { font-size: 20px; opacity: 0.5; cursor: pointer; padding-left: 10px; }
+
+        /* Footer */
         footer {
             margin-top: auto;
             padding: 40px 0 20px;
             text-align: center;
+        }
+        .kofi-btn {
+            display: inline-block;
+            background: var(--main);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+        .footer-line {
             font-size: 11px;
             line-height: 1.8;
-            opacity: 0.4;
+            color: #aaa;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -175,9 +222,21 @@
     </div>
 </div>
 
+<div id="ath-modal">
+    <div class="ath-content">
+        <img src="image_43.png" class="ath-icon" alt="icon">
+        <div class="ath-text">Tap the share button and select "Add to Home Screen" for quick access.</div>
+        <div class="ath-close" id="ath-close">×</div>
+    </div>
+</div>
+
 <footer>
-    No login / No tracking / No ads / Browser only<br>
-    Privacy Policy / afrorakda © 2026
+    <a href="https://ko-fi.com/afrorakda" target="_blank" rel="noopener" class="kofi-btn">☕️buy me a coffee</a>
+    <div class="footer-line">
+        No login / No tracking / No ads / Browser only<br>
+        Privacy Policy<br>
+        afrorakda © 2026
+    </div>
 </footer>
 
 <script>
@@ -186,8 +245,10 @@
     const resultBox = document.getElementById('result-box');
     const stats = document.getElementById('stats');
     const btnCopy = document.getElementById('btn-copy');
+    const athModal = document.getElementById('ath-modal');
     let mode = 'content';
 
+    // Mode Toggle
     document.getElementById('btn-content').onclick = (e) => {
         mode = 'content';
         e.target.classList.add('active');
@@ -199,12 +260,14 @@
         document.getElementById('btn-content').classList.remove('active');
     };
 
+    // Clear
     document.getElementById('btn-clr').onclick = () => {
         input.value = '';
         resultBox.style.display = 'none';
         input.focus();
     };
 
+    // Core Logic
     btnMain.onclick = () => {
         const original = input.value;
         if(!original) return;
@@ -212,7 +275,7 @@
         const pairs = [
             ['\\(', '\\)'], ['（', '）'], ['\\[', '\\]'], ['［', '］'],
             ['\\{', '\\}'], ['｛', '｝'], ['「', '」'], ['『', '』'],
-            ['<', '>'], ['〈', '〉'], ['《', '》'], ['＜', '＞'], ['【', '】']
+            ['<', '>'], ['〈', '〉'], ['《', '》'], ['＜', '＞'], ['【', '】'], ['〔', '〕']
         ];
 
         let result = original;
@@ -231,18 +294,26 @@
 
         input.value = result;
         stats.innerHTML = `
-            <div class="stat-row"><span>Before:</span><span>${original.length} chars</span></div>
-            <div class="stat-row"><span>After:</span><span>${result.length} chars</span></div>
+            <div class="stat-row"><span>Characters</span><span>${original.length} → ${result.length}</span></div>
         `;
         resultBox.style.display = 'block';
     };
 
+    // Copy
     btnCopy.onclick = () => {
         navigator.clipboard.writeText(input.value);
         const oldText = btnCopy.innerText;
         btnCopy.innerText = '✅ COPIED';
         setTimeout(() => btnCopy.innerText = oldText, 2000);
     };
+
+    // Add to Home Screen Logic (iOS)
+    const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+    const isStandalone = window.navigator.standalone === true;
+    if (isIos && !isStandalone) {
+        athModal.style.display = 'block';
+    }
+    document.getElementById('ath-close').onclick = () => athModal.style.display = 'none';
 </script>
 
 </body>
