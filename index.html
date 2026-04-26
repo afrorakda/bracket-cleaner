@@ -113,7 +113,6 @@
             -webkit-text-fill-color: var(--main) !important;
             opacity: 1 !important;
         }
-        /* プレースホルダー: #bbb */
         textarea::placeholder { color: #bbb !important; -webkit-text-fill-color: #bbb !important; opacity: 1 !important; }
 
         .clr-btn {
@@ -137,17 +136,19 @@
             cursor: pointer;
             -webkit-text-fill-color: #fff;
         }
+        
+        /* 枠線を強調したコピーボタン */
         .btn-copy {
             width: 100%;
             padding: 16px;
             background-color: var(--accent);
             color: var(--main);
-            border: none;
+            border: 2px solid var(--main); /* 枠線強調 */
             border-radius: var(--radius);
             font-size: 0.9rem;
             font-weight: 800;
             cursor: pointer;
-            display: none; /* 初期は非表示 */
+            display: none;
         }
         .btn-main:active, .btn-copy:active { transform: scale(0.98); }
 
@@ -162,7 +163,7 @@
             padding: 12px; border-radius: var(--radius); font-weight: 800; font-size: 0.8rem; cursor: pointer;
         }
 
-        /* 鉄壁フッター（聖域） */
+        /* 鉄壁フッター */
         footer { text-align: center; font-size: 0.75rem; color: #999; line-height: 1.6; font-weight: 700; margin-top: 15px; }
         footer a { color: inherit; text-decoration: underline; }
 
@@ -230,10 +231,17 @@
     const clrBtn = document.getElementById('clrBtn');
     const btnRun = document.getElementById('btn-run');
     const btnCopy = document.getElementById('btn-copy');
-    let currentMode = 'content';
+    let currentMode = localStorage.getItem('bracketCleanerMode') || 'content';
+
+    // 初期モードの反映
+    function init() {
+        setMode(currentMode);
+        loadFooter();
+    }
 
     function setMode(mode) {
         currentMode = mode;
+        localStorage.setItem('bracketCleanerMode', mode); // モード保存
         document.getElementById('btn-content').classList.toggle('active', mode === 'content');
         document.getElementById('btn-bracket').classList.toggle('active', mode === 'bracket');
     }
@@ -262,7 +270,6 @@
         let result = original;
         if (currentMode === 'content') {
             pairs.forEach(p => {
-                // 再帰的/反復的な削除: 入れ子 (Inner) も含めて「最も外側」を消すまで繰り返す
                 const re = new RegExp(p[0] + '.*?' + p[1], 'g');
                 let prev;
                 do {
@@ -279,7 +286,7 @@
         }
 
         input.value = result;
-        btnCopy.style.display = 'block'; // クリーン後にコピーボタンを表示
+        btnCopy.style.display = 'block';
     }
 
     function copyResult() {
@@ -312,10 +319,10 @@
                 if (data.modalTitle) document.getElementById('modal-title').innerText = data.modalTitle;
                 if (data.modalBody) document.getElementById('modal-body').innerHTML = data.modalBody;
             }
-        } catch (e) { console.log("Static footer active."); }
+        } catch (e) {}
     }
 
-    loadFooter();
+    init();
 </script>
 
 </body>
