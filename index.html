@@ -17,10 +17,8 @@
             --radius: 15px;
         }
 
-        /* 憲法遵守: 角丸15px / iOS Safari対策 / 全域選択禁止 */
+        /* 憲法遵守: 角丸15px / iOS Safari対策 */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
-
-        /* 入力エリアのみテキスト選択許可 */
         textarea { -webkit-user-select: text; user-select: text; }
 
         body {
@@ -74,7 +72,7 @@
         .mode-btn {
             flex: 1;
             padding: 12px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 800;
             border: none;
             border-radius: 10px;
@@ -100,7 +98,7 @@
 
         textarea {
             width: 100%;
-            height: 280px;
+            height: 260px;
             padding: 15px;
             padding-right: 45px;
             border: 2px solid var(--accent);
@@ -115,6 +113,7 @@
             -webkit-text-fill-color: var(--main) !important;
             opacity: 1 !important;
         }
+        /* プレースホルダー: #bbb */
         textarea::placeholder { color: #bbb !important; -webkit-text-fill-color: #bbb !important; opacity: 1 !important; }
 
         .clr-btn {
@@ -124,7 +123,9 @@
             cursor: pointer; border: none; font-size: 16px; font-weight: bold; z-index: 5;
         }
 
-        .action-btn {
+        .action-area { display: flex; flex-direction: column; gap: 10px; }
+
+        .btn-main {
             width: 100%;
             padding: 18px;
             background-color: var(--main);
@@ -136,7 +137,19 @@
             cursor: pointer;
             -webkit-text-fill-color: #fff;
         }
-        .action-btn:active { transform: scale(0.98); }
+        .btn-copy {
+            width: 100%;
+            padding: 16px;
+            background-color: var(--accent);
+            color: var(--main);
+            border: none;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: none; /* 初期は非表示 */
+        }
+        .btn-main:active, .btn-copy:active { transform: scale(0.98); }
 
         .footer-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 5px; }
         .kofi-btn {
@@ -174,7 +187,7 @@
     <p class="subtitle">Remove brackets or content instantly.</p>
 
     <div class="mode-selector">
-        <button id="btn-content" class="mode-btn active" onclick="setMode('content')">Delete Content</button>
+        <button id="btn-content" class="mode-btn active" onclick="setMode('content')">Brackets + Content</button>
         <button id="btn-bracket" class="mode-btn" onclick="setMode('bracket')">Brackets Only</button>
     </div>
 
@@ -185,7 +198,10 @@
         </div>
     </div>
 
-    <button id="btn-run" class="action-btn" onclick="cleanText()">CLEAN TEXT</button>
+    <div class="action-area">
+        <button id="btn-run" class="btn-main" onclick="cleanText()">CLEAN TEXT</button>
+        <button id="btn-copy" class="btn-copy" onclick="copyResult()">COPY CLEANED TEXT</button>
+    </div>
 
     <div class="footer-btns">
         <a id="kofi-link" href="https://ko-fi.com/afrorakda" target="_blank" class="kofi-btn">☕️ buy me a coffee</a>
@@ -213,6 +229,7 @@
     const input = document.getElementById('text-input');
     const clrBtn = document.getElementById('clrBtn');
     const btnRun = document.getElementById('btn-run');
+    const btnCopy = document.getElementById('btn-copy');
     let currentMode = 'content';
 
     function setMode(mode) {
@@ -223,6 +240,7 @@
 
     function toggleClr() {
         clrBtn.style.display = input.value.length > 0 ? 'flex' : 'none';
+        if(input.value.length === 0) btnCopy.style.display = 'none';
     }
 
     function clearInput() {
@@ -235,7 +253,6 @@
         const original = input.value;
         if (!original) return;
 
-        // 外部リファレンスに基づく広範な括弧ペア
         const pairs = [
             ['\\(', '\\)'], ['（', '）'], ['\\[', '\\]'], ['［', '］'],
             ['\\{', '\\}'], ['｛', '｝'], ['「', '」'], ['『', '』'],
@@ -245,8 +262,13 @@
         let result = original;
         if (currentMode === 'content') {
             pairs.forEach(p => {
+                // 再帰的/反復的な削除: 入れ子 (Inner) も含めて「最も外側」を消すまで繰り返す
                 const re = new RegExp(p[0] + '.*?' + p[1], 'g');
-                result = result.replace(re, '');
+                let prev;
+                do {
+                    prev = result;
+                    result = result.replace(re, '');
+                } while (result !== prev);
             });
         } else {
             pairs.forEach(p => {
@@ -257,19 +279,27 @@
         }
 
         input.value = result;
-        
-        // クリップボードへ自動コピー
-        navigator.clipboard.writeText(result).then(() => {
-            const oldText = btnRun.innerText;
-            btnRun.innerText = '✅ COPIED!';
-            setTimeout(() => btnRun.innerText = oldText, 1500);
+        btnCopy.style.display = 'block'; // クリーン後にコピーボタンを表示
+    }
+
+    function copyResult() {
+        if (!input.value) return;
+        navigator.clipboard.writeText(input.value).then(() => {
+            const oldText = btnCopy.innerText;
+            btnCopy.innerText = '✅ COPIED!';
+            btnCopy.style.backgroundColor = '#333';
+            btnCopy.style.color = '#fff';
+            setTimeout(() => {
+                btnCopy.innerText = oldText;
+                btnCopy.style.backgroundColor = 'var(--accent)';
+                btnCopy.style.color = 'var(--main)';
+            }, 1500);
         });
     }
 
     function showModal() { document.getElementById('modal').style.display = 'flex'; }
     function hideModal() { document.getElementById('modal').style.display = 'none'; }
 
-    // 鉄壁ロジック: 削除厳禁・聖域
     async function loadFooter() {
         try {
             const response = await fetch('footer.json');
